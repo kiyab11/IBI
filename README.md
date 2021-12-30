@@ -2,6 +2,8 @@
 Imagej Batch Processing Isothermal Crystallization Kinetics (IBI) is designed for batch processing in Fiji Is Just ImageJ (FIJI) software with an acquisition for isothermal crystallization kinetics analysis that can be further uploaded in R programming.
 # Citation
 Please note that IBI is not yet available through Fiji, and in the future will be in a publication. For now, if you use it successfully for your research please be so kind to email me how it was helpful. 😎
+# Contact
+Contact person in case of questions Zakiya Barnes o Discord identifier phdkiya#2931 o Email address of the registered account
 # 
 #
 # IBI
