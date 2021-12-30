@@ -1,0 +1,73 @@
+
+/*
+
+To process multiple images in a folder */
+
+//@ File (label = "Input directory", style = "directory") input //@ File (label = "Output directory", style = "directory") output //@ String (label = "File suffix", value = ".avi") suffix // @int(label ="Minimum Size") minSize
+
+// after downloading fiji, first calibrate image directly by scale bar on image before processesing // measure legnth of scale bar using line tool // hold shift button down to avoid line from moving // run > Analyse > Set Scale // select global to apply to all images in the future with the same scale
+
+// to overlay new scale bar onto image: // Analyse > Tools > Scale bar
+
+// to add the time to image with location 5,5: // Image > Stacks > Series Labler
+
+// to apply time to all slices: // run > Analyse > set scale // select label all slices
+
+// set input and output folder of optical data input = getDirectory("C:\Users\CAU Student\OneDrive - Clark Atlanta University\Documents\input"); output = getDirectory("C:\Users\CAU Student\OneDrive - Clark Atlanta University\Documents\output");
+
+processFolder(input);
+
+// function to scan folders/subfolders/files to find files with correct suffix function processFolder(input) { list = getFileList(input); list = Array.sort(list); for (i = 0; i < list.length; i++) { if(File.isDirectory(input + File.separator + list[i])) processFolder(input + File.separator + list[i]); if(endsWith(list[i], suffix)) processFile(input, output, list[i]); }
+
+}
+
+function processFile(input, output, file) { //setBatchMode(true)
+
+newimage = input + list[i];
+
+// import file using Bioformats, check color correct color mode and split channels box
+run("Bio-Formats Importer", "open=[" + newimage +"] color_mode=Composite group_files rois_import=[ROI manager] view=[Data Browser] stack_order=XYCZT");
+
+// track start time of processing and measurements start_time = getTime();
+
+newimagetitle = File.nameWithoutExtension; newimagename = getTitle(); print("The name of the image is "+newimagename);
+
+// recovering frame rate framerate = Stack.getFrameRate(); print(framerate)
+
+// show image parameters run("Show Info...");
+
+// generalize names of seperate channels // channel 1 and 2 ID run("Split Channels"); newimageIDC1 = "C1-"+newimagename; newimageIDC2 = "C2-"+newimagename; newimageIDC3 = "C3-"+newimagename;
+
+selectImage(newimageIDC3); close();
+
+// seperate background by HiLo LUT of both red and yellow (turn green to yellow) channels // change both maximum and minimum thresholds on B&C // Change LUT to is respective color and channels to merge selectImage(newimageIDC1); run("HiLo"); run("Brightness/Contrast..."); waitForUser("Adjust B/C, then hit okay!"); run("Red");
+
+selectImage(newimageIDC2); run("HiLo"); run("Brightness/Contrast..."); waitForUser("Adjust B/C, then hit okay!"); run("Yellow");
+
+// merge channels back together run("Merge Channels...", "c1=["+newimageIDC1+"] c7=["+newimageIDC2+"]");
+
+// save the merged channels saveAs("avi", output+i+" merged_ " + newimagetitle); print("merged channels saved.." +newimagetitle);
+
+//run("Duplicate...");
+
+// convert to grayscale run("8-bit");
+
+// process image run("Auto Local Threshold", method=Bernsen radius=40 parameter_1=0 parameter_2=0 white"); run("invert"); run("Fill Holes");
+
+// convert to binary mask run("Convert to mask");
+
+// save the final image saveAs("avi", output+i+" final " + newimagetitle); print("final image saved.." +newimagetitle);
+
+// manually check the duplicate in the folder // ask if you would like to analyze particles or continue processing image waitForUser("Check results in output folder, then hit okay to analyze particles!");
+
+// use lable to request and insert minimum size of particle run("Analyze Particles...", "size=" + minSize + -Infinty exclude add");
+
+// overlay roi to original new image run("Clear Results"); selectImage(newimagetitle) //select original image roiManager("Show All With label"); // overlay rois roiManager("Deselect"); roiManager("Measure"); // measure on original image
+
+// save rois for current image roiManager("Deselect"); roiManager("Save", output+ "/" + file + "_roi.zip); // save roi to zip file roiManager("Deselect"); roiManager("Delete"); //clear roi manager for next image
+
+showMessage("All done!"); print("Processing: " + input + File.separator + newimagename); print("Saving to: " + output); }
+
+// track end time of processing and measurements end_time = getTime();
+
+// print time it took to process the image print("Processing took " + (end_time-start_time) + " ms");
